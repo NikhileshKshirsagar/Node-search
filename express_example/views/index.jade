@@ -1,0 +1,77 @@
+extends layout
+
+block content
+  h1= title
+  //p nodezoo search for #{searchtext}
+  p(class="hide") #{aaa}
+  form(action="/" method="post" role="form")
+   table(style="width: 100%;")
+    tr
+     td
+      input(id="appendedInputButton" style="width: 70%; float: left;" type="text" name="search" class="form-control" placeholder="Search Node modules" value=searchtext)
+      div(style="width: 20%; float: left; margin: 0px 5px 5px 20px;")
+       input(type='submit' value="Search" class="btn btn-primary" style="width: 40%;")
+    tr
+     td
+      input(type='submit' value="Save search to Graph db" class="btn btn-success" style="margin: 5px 5px 5px 0px ;")
+      input(type='submit' value="Save search to Elastic" class="btn btn-success" style="margin: 5px 5px 5px 5px ;")
+  
+  table(id="tbl" class="table table-bordered table-hover hide")
+  
+  p(id="nodezooresult" class="hide") #{nodezooresult}
+  
+  div(id="data")
+  script(type='text/javascript')
+   $(function(){
+   
+   var table = $('#tbl');
+   var thead = $('<thead style="background-color: rgb(238,238,238);" ><td>Name</td><td>Description</td><td>latest</td><td>Rank</td><td>Site</td></thead>');
+   table.append(thead);
+   var njson = ''
+   if($('#nodezooresult').html() != '')
+    var njson = JSON.parse($('#nodezooresult').html());
+   console.log(njson);
+   if(njson != '')
+    console.log('INSIDE');
+    $.each(njson.items, function(i, item){
+     //console.log('EACH');
+     table.removeClass('hide');
+     row1 = $('<tr></tr>');
+     
+     innerrow1 = $('<td></td>').text(item.name);
+     row1.append(innerrow1);
+    
+    
+     innerrow2 = $('<td style="width:450px;"></td>').text(item.desc);
+     row1.append(innerrow2);
+    
+     innerrow4 = $('<td></td>').text(item.latest);
+     row1.append(innerrow4);
+    
+     innerrow3 = $('<td></td>').text(item.rank);
+     row1.append(innerrow3);
+    
+     link = $('<a>').prop('href', item.site);
+     innerrow5linksite = $('<p style="margin: 0 0 1px;">Site : <a>'+ item.site +'</a></p>').attr('href',item.site);
+     innerrow5linkgit = $('<p style="margin: 0 0 1px;">Git : <a>'+ item.git +'</a></p>').attr('href',item.git);
+     
+     innerrow5 = $('<td></td>').append(innerrow5linksite).append(innerrow5linkgit);
+    
+     row1.append(innerrow5);
+    
+     table.append(row1);
+    
+    console.log('name = ' + item.name)
+    console.log('desc = ' + item.desc)
+    console.log('latest = ' + item.latest)
+    console.log('maints = ' + item.maints)
+    console.log('site = ' + item.site)
+    console.log('git = ' + item.git)
+    console.log('rank = ' + item.rank)
+    console.log('score = ' + item.score)
+    console.log('nr = ' + item.nr)
+    console.log('-------------------------------')
+   })
+ 
+   $('#data').append(table);
+   });
