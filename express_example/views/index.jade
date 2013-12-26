@@ -1,29 +1,36 @@
 extends layout
 
 block content
-  h1= title
+  div(style="float: left; width: 100%;")
+   h1(style="float: left;") #{title}
+   p(style="float: left; margin-top: 30px; margin-left: 20px;") #{notification}
   //p nodezoo search for #{searchtext}
-  p(class="hide") #{aaa}
-  form(action="/" method="post" role="form")
+
+  form(id="form" action="/" method="post" role="form" style="float: left; width: 100%")
+   input(id="actionParam" name="actionParam" class="hide")
    table(style="width: 100%;")
     tr
      td
       input(id="appendedInputButton" style="width: 70%; float: left;" type="text" name="search" class="form-control" placeholder="Search Node modules" value=searchtext)
       div(style="width: 20%; float: left; margin: 0px 5px 5px 20px;")
-       input(type='submit' value="Search" class="btn btn-primary" style="width: 40%;")
+       input(type='button' action="search" value="Search" class="btn btn-primary btnaction" style="width: 40%;")
     tr
      td
-      input(type='submit' value="Save search to Graph db" class="btn btn-success" style="margin: 5px 5px 5px 0px ;")
-      input(type='submit' value="Save search to Elastic" class="btn btn-success" style="margin: 5px 5px 5px 5px ;")
+      input(type='button' action="graphdb" value="Save search to Graph db" class="btn btn-success btnaction" style="margin: 5px 5px 5px 0px ;")
+      input(type='button' action="elastic" value="Save search to Elastic" class="btn btn-success btnaction" style="margin: 5px 5px 5px 5px ;")
   
-  table(id="tbl" class="table table-bordered table-hover hide")
+  table(id="tbl" class="table table-bordered table-hover hide" style="float: left; width: 100%;")
   
   p(id="nodezooresult" class="hide") #{nodezooresult}
   
   div(id="data")
   script(type='text/javascript')
    $(function(){
-   
+   $('.btnaction').click(function(event){
+    console.log($(event.currentTarget).attr('action'));
+    $('#actionParam').val($(event.currentTarget).attr('action'));
+    $('#form').submit();
+   });
    var table = $('#tbl');
    var thead = $('<thead style="background-color: rgb(238,238,238);" ><td>Name</td><td>Description</td><td>latest</td><td>Rank</td><td>Site</td></thead>');
    table.append(thead);
@@ -61,6 +68,7 @@ block content
     
      table.append(row1);
     
+    /*
     console.log('name = ' + item.name)
     console.log('desc = ' + item.desc)
     console.log('latest = ' + item.latest)
@@ -71,6 +79,7 @@ block content
     console.log('score = ' + item.score)
     console.log('nr = ' + item.nr)
     console.log('-------------------------------')
+    */
    })
  
    $('#data').append(table);

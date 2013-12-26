@@ -102,42 +102,79 @@ nodezoo.query({q : 'node'}, function(err, result){
 function getnodezoodata(searchString, renderCall,req, res){
 	console.log('In getnodezoodata');
 	nodezoo.query({q : searchString }, function(err, result){
-		console.log(nodezooresult);
+		//console.log(nodezooresult);
 		nodezooresult = {};
 		
 		nodezooresult = result;
-		console.log(nodezooresult);
-		renderCall(JSON.stringify(nodezooresult), req, res);
+		//console.log(nodezooresult);
+		renderCall(nodezooresult, searchString,req, res);
 	});
 }
 
-function renderCall(result, req, res) {
+function render(result, notification, req, res) {
 	console.log('In renderCall');
 	res.render('index', {
-		title : 'NODE MODULE SEARCH',
+		title : 'NODE SEARCH',
 		searchtext : req.body.search,
-		nodezooresult : result
+		nodezooresult : JSON.stringify(result),
+		notification : notification
 	});
 }
 
-app.post('/', function(req, res){
-	console.log('In POST');
-	//console.log(nodezooresult);
-	//console.log(req.body.search);
-	getnodezoodata(req.body.search, renderCall, req, res);
-	
-});
+function GraphInsert(objNodeResult, searchString, req, res){
+	console.log('Inside GraphInsert');
+
+	objNodeResult.items.forEach(function(item){
+		var node = db.createNode({
+			ModuleName: item['name'], 
+			desc: item['desc'],
+			latest : item['latest'],
+			maints : item['maints'], 
+			sitelink : item['site'],
+			githublink : item['git'],
+			rank : item['rank'],
+			score : item['score'],
+			nr : item['nr'],
+			nodename : searchString
+		}); 
+
+			node.save(function (err, node) {    // ...this is what actually persists.
+			if (err) {
+				console.err('Error saving new node to database:', err);
+			} else {
+			console.log('Node saved to database with id:', node.id);
+			}
+		});
+	});
+	render(objNodeResult, 'Result saved successfully to Graph database', req, res);
+}
 
 app.post('/graphsave', function(req,res){
-	
+	getnodezoodata(req.body.search, GraphInsert, req, res);
+	console.log('Inside graphsave');
 });
 
 
 app.get('/', function(req, res){
 	res.render('index', {
-		title : 'NODE MODULE SEARCH',
+		title : 'NODE SEARCH',
 		//nodezooresult : JSON.stringify(nodezooresult)
 	});
+});
+
+app.post('/', function(req, res){
+	console.log('In POST');
+	console.log(req.body);
+	if(req.body.actionParam == 'search')
+	{
+		console.log('SEARCH');
+		getnodezoodata(req.body.search, render, req, res);
+	}
+	else if(req.body.actionParam == 'graphdb')
+	{
+		console.log('GRAPH INSERT');
+		getnodezoodata(req.body.search, GraphInsert, req, res);
+	}
 });
 
 http.createServer(app).listen(app.get('port'), function(){
