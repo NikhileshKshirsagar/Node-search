@@ -29,7 +29,7 @@ if ('development' == app.get('env')) {
   app.use(express.errorHandler());
 }
 
-var result = '';
+/*var result = '';
 var mysql = require('mysql');
 var connection = mysql.createConnection({
 	host : 'localhost',
@@ -39,7 +39,7 @@ var connection = mysql.createConnection({
 });
 
 connection.connect();
-
+*/
 var neo4j = require('neo4j');
 var db = new neo4j.GraphDatabase('http://localhost:7474');
 
@@ -149,6 +149,40 @@ function GraphInsert(objNodeResult, searchString, req, res){
 	render(objNodeResult, 'Result saved successfully to Graph database', req, res);
 }
 
+function ElasticInsert(objNodeResult, searchString, req, res){
+        console.log('Inside ElasticInsert');
+	i=0;
+
+	objNodeResult.items.forEach(function(item){
+		i++;
+		
+	client.create({
+		  index: 'nodezoo',
+		  type: 'npm',
+		  body: {
+		    ModuleName: item['name'],
+                        desc: item['desc'],
+                        latest : item['latest'],
+                        maints : item['maints'],
+                        sitelink : item['site'],
+                        githublink : item['git'],
+                        rank : item['rank'],
+                        score : item['score'],
+                        nr : item['nr'],
+                        nodename : searchString
+			}
+		}, function (error, response) {
+		  // ...
+			console.log("Saved: "+i);
+		});
+	});
+
+    render(objNodeResult, 'Result saved successfully to elastic database', req, res);
+}
+
+
+     
+
 app.post('/graphsave', function(req,res){
 	getnodezoodata(req.body.search, GraphInsert, req, res);
 	console.log('Inside graphsave');
@@ -160,6 +194,11 @@ app.get('/', function(req, res){
 		title : 'NODE SEARCH',
 		//nodezooresult : JSON.stringify(nodezooresult)
 	});
+});
+var elasticsearch = require('elasticsearch');
+var client = new elasticsearch.Client({
+  host: 'localhost:9200',
+  log: 'trace'
 });
 
 app.post('/', function(req, res){
@@ -174,6 +213,10 @@ app.post('/', function(req, res){
 	{
 		console.log('GRAPH INSERT');
 		getnodezoodata(req.body.search, GraphInsert, req, res);
+	}
+	else if(req.body.actionParam == 'elastic')
+	{
+	  	getnodezoodata(req.body.search, ElasticInsert, req, res);
 	}
 });
 
